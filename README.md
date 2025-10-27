@@ -1,141 +1,164 @@
-# Arduino-techx
-# 🌡️ ESP32 Sensor Dashboard
+# 💡 SmartLights — Dual Mode ESP32 Wi-Fi Lighting Controller
 
 [![Platform](https://img.shields.io/badge/Platform-ESP32-blue?logo=espressif)](https://www.espressif.com/)
 [![Language](https://img.shields.io/badge/Language-C++-brightgreen?logo=c%2B%2B)](https://isocpp.org/)
-[![Library](https://img.shields.io/badge/Library-DHT11-orange)](https://github.com/adafruit/DHT-sensor-library)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Active-success.svg)]()
+[![Network](https://img.shields.io/badge/Mode-SoftAP%20+%20STA-yellow)]()
+[![UI](https://img.shields.io/badge/UI-Web%20Dashboard-orange)]()
+[![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)](LICENSE)
 
----
-
-This project creates a **Wi-Fi-enabled environmental monitoring dashboard** using an **ESP32** and a **DHT11 temperature & humidity sensor**.  
-It hosts a local web server that displays **real-time sensor readings** and allows **LED control** directly from your browser.
+SmartLights is a dual-mode ESP32 web-based lighting control system.  
+It combines **SoftAP + Station (STA)** modes, allowing users to either connect directly to the ESP32 access point or control it over a local Wi-Fi network.
 
 ---
 
 ## 🚀 Features
 
-- 📶 Creates a **Wi-Fi Access Point** (`ESP32_Dashboard`)
-- 🌡️ Real-time **temperature** and **humidity** readings from DHT11
-- 💡 Control the onboard **LED** via a toggle button
-- 🔄 **Auto-refreshes** every 2 seconds using JavaScript (Fetch API)
-- 🎨 Clean, mobile-friendly **HTML + CSS** dashboard UI
-- ⚙️ Runs **entirely offline** — no internet required
+- **Dual Mode Operation:** SoftAP + STA (access point + router connection)
+- **Interactive Web UI:** Two pages — Dashboard and Settings
+- **Dynamic Frontend:** Animated toggles, live status updates, responsive layout
+- **Wi-Fi Configuration:** Scan, save, and auto-connect to known networks
+- **mDNS Support:** Access device via `<device_name>.local`
+- **Persistent Storage:** Saves credentials and device name using Preferences
+- **Silent Operation:** No serial prints; designed for standalone use
 
 ---
 
-## 🧩 Hardware Requirements
+## 🧱 Hardware Setup
 
-| Component | Description |
-|------------|--------------|
-| ESP32 | Wi-Fi capable microcontroller |
-| DHT11 Sensor | For temperature & humidity sensing |
-| Jumper Wires | For basic connections |
-| Breadboard | Optional, for prototyping |
-
----
-
-## ⚡ Circuit Connections
-
-| DHT11 Pin | ESP32 Pin |
-|------------|-----------|
-| VCC | 3.3V |
-| GND | GND |
-| DATA | GPIO 4 |
-
-The onboard **LED (GPIO 2)** is used for LED control.
+| Component | Pin |
+|------------|-----|
+| Kitchen Light  | GPIO 2 |
+| Bedroom Light  | GPIO 4 |
+| Sitting Room   | GPIO 16 |
+| Security Light | GPIO 17 |
+| Balcony Light  | GPIO 18 |
 
 ---
 
-## 🧠 How It Works
+## 🌐 Web Interface Overview
 
-1. The ESP32 starts in **Access Point mode** and hosts a local web server.  
-2. The DHT11 sensor reads **temperature and humidity** every 2 seconds.  
-3. The dashboard fetches data via **AJAX (Fetch API)** and updates the UI dynamically.  
-4. Clicking the **Toggle LED** button sends a request to the ESP32 to flip the LED state.
+### 🖥 Dashboard (`/`)
+- Displays toggle switches for each light  
+- Animated background that changes with light activity  
+- Shows access mode (local or AP)  
+- Periodic auto-refresh every 3 seconds  
 
----
-
-## 🧾 Web Dashboard Preview
-
-📱 ESP32 Sensor Dashboard
-├── Temperature: 25 °C
-├── Humidity: 60 %
-└── LED Control: [Toggle LED]
-
-
-The readings refresh automatically every 2 seconds.
+### ⚙️ Settings (`/settings`)
+- Scans for nearby Wi-Fi networks  
+- Lets you set SSID, password, and custom device name  
+- Connects to Wi-Fi and starts mDNS service  
+- Persists credentials via `Preferences`
 
 ---
 
-## 🔧 Setup and Usage
+## 📦 Code Overview
 
-### 1️⃣ Install Dependencies
-In the Arduino IDE, make sure the following libraries are installed:
-- `WiFi.h` (built-in with ESP32 core)
-- `WebServer.h` (built-in with ESP32 core)
-- `DHT.h` (install via Library Manager → “DHT sensor library by Adafruit”)
+### Core Libraries Used:
+```cpp
+#include <WiFi.h>
+#include <WebServer.h>
+#include <ESPmDNS.h>
+#include <Preferences.h>
+Light Configuration
+cpp
+Copy code
+const int PIN_KITCHEN  = 2;
+const int PIN_BEDROOM  = 4;
+const int PIN_SITTING  = 16;
+const int PIN_SECURITY = 17;
+const int PIN_BALCONY  = 18;
+Light Control Structure
+cpp
+Copy code
+struct Light {
+  const char* name;
+  int pin;
+  bool state;
+};
+Web Endpoints
+Endpoint	Method	Purpose
+/	GET	Loads the Dashboard
+/settings	GET	Loads Wi-Fi configuration page
+/status	GET	Returns light states in JSON
+/toggle?id=<name>	GET	Toggles specific light
+/scan	GET	Scans for available Wi-Fi networks
+/savewifi	POST	Saves Wi-Fi and device name
 
-### 2️⃣ Upload the Code
-1. Connect your ESP32 board to your computer.
-2. Copy this code into the Arduino IDE.
-3. Select **Tools → Board → ESP32 Dev Module**.
-4. Upload the sketch to your ESP32.
+🧠 Backend Logic Summary
+Initializes all GPIO pins as outputs.
 
-### 3️⃣ Connect and Access Dashboard
-1. Open **Serial Monitor** at `115200 baud` and note the IP address, e.g.:
-AP IP: 192.168.4.1
+Loads stored credentials from Preferences.
 
-2. Connect to the Wi-Fi network:
-SSID: ESP32_Dashboard
-Password: 12345678
+Starts ESP32 as an Access Point (ESP32-AP-Lights).
 
-3. Open your web browser and go to:
-http://192.168.4.1/
+If credentials exist, tries connecting to the saved router (STA mode).
 
+Launches an internal web server with all routes.
 
-🎉 You’ll now see your live dashboard showing temperature, humidity, and LED control!
+Registers mDNS using the configured device name.
 
----
+Responds to HTTP requests to control or configure lights.
 
-## 🧰 Code Overview
+🌈 Frontend Highlights
+Dashboard UI
+Modern dark design with animated toggles.
 
-| Function | Description |
-|-----------|--------------|
-| `handleRoot()` | Serves the main HTML dashboard |
-| `handleSensor()` | Returns JSON with temperature & humidity |
-| `handleToggleLED()` | Toggles the onboard LED and returns its new state |
-| `loop()` | Handles client requests and updates sensor readings periodically |
+Dynamic background gradients reflect active lights.
 
----
+Automatic refresh for real-time updates.
 
-## 🛡️ Notes
+Settings UI
+Sleek interface for scanning networks.
 
-- DHT11 sensors are slow; readings are updated every **2 seconds**.
-- The ESP32 runs in **Access Point mode**, no internet required.
-- You can modify it to run in **Station mode** to connect to existing Wi-Fi networks.
+Save and connect options with feedback messages.
 
----
+Displays mDNS access URL upon success.
 
-## 🧑‍💻 Author
+🧰 Example JSON Response
+When visiting /status, you’ll receive:
 
-**samuel gathemia**  
-Electrical & Electronics Engineer | Embedded Systems & IoT Developer  
-📍 South Eastern Kenya University (SEKU)  
-💡 Passionate about automation, IoT, and real-time monitoring systems.
+json
+Copy code
+{
+  "kitchen": 1,
+  "bedroom": 0,
+  "sitting": 1,
+  "security": 0,
+  "balcony": 0
+}
+⚙️ Setup Instructions
+Open your Arduino IDE or PlatformIO.
 
----
+Install libraries: WiFi, WebServer, ESPmDNS, Preferences.
 
-## 📜 License
+Upload the sketch to your ESP32.
 
-This project is open-source and available under the **MIT License**.  
-Feel free to use, modify, and share.
+Connect to ESP32-AP-Lights using password esp32lights.
 
----
+Visit http://192.168.4.1/ to access the web dashboard.
 
-## ⭐ Support
+Go to Settings to connect your ESP32 to your Wi-Fi network.
 
-If you like this project, please **give it a ⭐ on GitHub** — it helps others discover it!
+Access your device later via http://<device_name>.local.
 
----
+📁 Project Directory Layout
+kotlin
+Copy code
+SmartLights/
+├── SmartLights.ino
+├── README.md
+├── LICENSE
+└── data/
+    ├── index.html
+    ├── settings.html
+🧾 Notes
+Operates fully offline in AP mode.
+
+Designed for smart home automation and IoT experiments.
+
+No serial output; runs quietly for stable field deployment.
+
+🧑‍💻 Author
+Developed by Samuel Gathemia
+Electrical and Electronics Engineering
+South Eastern Kenya University (SEKU)
