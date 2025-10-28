@@ -75,6 +75,7 @@ struct Light {
   int pin;
   bool state;
 };
+---
 Web Endpoints
 Endpoint	Method	Purpose
 /	GET	Loads the Dashboard
@@ -98,7 +99,7 @@ Launches an internal web server with all routes.
 Registers mDNS using the configured device name.
 
 Responds to HTTP requests to control or configure lights.
-
+---
 🌈 Frontend Highlights
 Dashboard UI
 Modern dark design with animated toggles.
@@ -106,7 +107,7 @@ Modern dark design with animated toggles.
 Dynamic background gradients reflect active lights.
 
 Automatic refresh for real-time updates.
-
+---
 Settings UI
 Sleek interface for scanning networks.
 
@@ -126,6 +127,8 @@ Copy code
   "security": 0,
   "balcony": 0
 }
+
+---
 ⚙️ Setup Instructions
 Open your Arduino IDE or PlatformIO.
 
@@ -140,7 +143,7 @@ Visit http://192.168.4.1/ to access the web dashboard.
 Go to Settings to connect your ESP32 to your Wi-Fi network.
 
 Access your device later via http://<device_name>.local.
-
+---
 📁 Project Directory Layout
 kotlin
 Copy code
@@ -151,13 +154,14 @@ SmartLights/
 └── data/
     ├── index.html
     ├── settings.html
+---
 🧾 Notes
 Operates fully offline in AP mode.
 
 Designed for smart home automation and IoT experiments.
 
 No serial output; runs quietly for stable field deployment.
-
+---
 🧑‍💻 Author
 Developed by Samuel Gathemia
 Electrical and Electronics Engineering
